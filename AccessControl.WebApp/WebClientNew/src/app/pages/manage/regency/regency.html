@@ -1,0 +1,105 @@
+<p-toolbar styleClass="mb-6" *ngIf="('CreateReg' | userRoles) || ('DeleteReg' | userRoles)">
+    <ng-template #start>
+        <p-button label="{{'regency.add' | translate}}" icon="pi pi-plus" severity="secondary" class="mr-2"
+            (onClick)="openDialog('create')" *ngIf="'CreateReg' | userRoles" />
+        <p-button severity="secondary" label="{{'regency.delete' | translate}}" icon="pi pi-trash" outlined
+            (onClick)="deleteMultiple()" [disabled]="!selected || !selected.length" *ngIf="'DeleteReg' | userRoles" />
+    </ng-template>
+</p-toolbar>
+
+<p-table #dt [value]="allRegency" [rows]="pageSize" [columns]="" [paginator]="true" [totalRecords]="totalRecords"
+    *ngIf="'ViewReg' | userRoles" [tableStyle]="{ 'min-width': '75rem' }" [rowHover]="true" dataKey="regId"
+    (onLazyLoad)="onLazyLoad($event)"
+    currentPageReportTemplate="{{'regency.display' | translate}} {first} {{'regency.to' | translate}} {last} {{'regency.of' | translate}} {totalRecords} {{'regency.record' | translate}}"
+    [showCurrentPageReport]="true" [rowsPerPageOptions]="pageSizeOptions" [(selection)]="selected" [scrollable]="true"
+    [lazy]="true">
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">{{'regency.title' | translate}}</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (keyup)="applySearch($event)"
+                    placeholder="{{'regency.search' | translate}}" />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="width: 3rem" pFrozenColumn>
+                <p-tableHeaderCheckbox />
+            </th>
+            <th style="min-width: 3rem; text-align: center;">{{'regency.STT' | translate}}</th>
+            <th pSortableColumn="regName" style="min-width:10rem">
+                {{'regency.regencyname' | translate}}
+            </th>
+            <th pSortableColumn="regDescription" style="min-width: 10rem">
+                {{'regency.description' | translate}}
+            </th>
+            <th pSortableColumn="regStatus" style="min-width:10rem; text-align: center;">
+                {{'regency.status' | translate}}
+            </th>
+            <th pSortableColumn="action" alignFrozen="right" pFrozenColumn style="min-width:8rem; text-align: center;"
+                *ngIf="('UpdateReg' | userRoles) || ('DeleteReg' | userRoles)">
+                {{'regency.action' | translate}}
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-reg let-rowIndex="rowIndex">
+        <tr>
+            <td style="width: 3rem" pFrozenColumn>
+                <p-tableCheckbox [value]="reg" />
+            </td>
+            <td style="text-align: center; font-weight: 600;">
+                {{rowIndex + 1 }}
+            </td>
+            <td>{{ reg.regName }}</td>
+            <td>{{ reg.regDescription }}</td>
+            <td style="text-align: center;">
+                <i class="pi" [ngClass]="{
+                        'text-green-500 pi-check-circle': reg.regStatus,
+                        'text-red-500 pi-times-circle': !reg.regStatus
+                    }"></i>
+            </td>
+            <td alignFrozen="right" pFrozenColumn style="text-align: center;"
+                *ngIf="('UpdateReg' | userRoles) || ('DeleteReg' | userRoles)">
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                    *ngIf="'UpdateReg' | userRoles" (onClick)="openDialog('edit',reg)" />
+                <p-button icon="pi pi-trash" [disabled]="reg.regStatus == false" severity="danger"
+                    (onClick)="delete(reg)" [rounded]="true" [outlined]="true" *ngIf="'DeleteReg' | userRoles" />
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<form [formGroup]="regForm" (ngSubmit)="addData()">
+    <p-dialog [(visible)]="regDialog" [style]="{ width: '650px','max-height': '800px' }" [header]="title" [modal]="true"
+        [closable]="false">
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="regName" class="block font-bold mb-3">{{'regency.regencyname' | translate}}</label>
+                <input type="text" pInputText id="regName" formControlName="regName" maxlength="100" required autofocus
+                    fluid />
+                <small class="text-red-500"
+                    *ngIf="regForm.get('regName')?.hasError('required') && regForm.get('regName')?.touched">
+                    {{'regency.regencynamerequired' | translate}}
+                </small>
+            </div>
+            <div>
+                <label for="regDescription" class="block font-bold mb-3">{{'regency.description' | translate}}</label>
+                <input type="text" pInputText id="regDescription" formControlName="regDescription" maxlength="200"
+                    autofocus fluid />
+            </div>
+            <div class="flex items-center">
+                <p-checkbox inputId="regStatus" binary="true" formControlName="regStatus" />
+                <label for="regStatus" class="ml-2">{{'regency.status' | translate}}</label>
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button label="{{'regency.close' | translate}}" icon="pi pi-times" text (click)="hideDialog()" />
+            <p-button label="{{'regency.save' | translate}}" type="submit" icon="pi pi-check"
+                [disabled]="regForm.invalid" />
+        </ng-template>
+    </p-dialog>
+</form>
+<p-toast />
+<p-confirmdialog [style]="{ width: '450px' }" />

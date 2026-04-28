@@ -1,0 +1,66 @@
+<app-floating-configurator />
+<div
+    class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
+    <div class="flex flex-col items-center justify-center">
+        <div
+            style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
+            <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
+                <div class="text-center mb-8">
+                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" class="mb-8 w-20 shrink-0 mx-auto"
+                        role="img" aria-label="Clock Logo">
+                        <defs>
+                            <style>
+                                .primary {
+                                    stroke: var(--primary-color, #0066ff);
+                                    stroke-width: 3;
+                                    stroke-linecap: round;
+                                    stroke-linejoin: round;
+                                    fill: none;
+                                }
+
+                                .fill {
+                                    fill: var(--primary-color, #0066ff);
+                                }
+                            </style>
+                        </defs>
+                        <circle cx="32" cy="32" r="26" class="primary" />
+                        <line x1="32" y1="8" x2="32" y2="12" class="primary" />
+                        <line x1="32" y1="52" x2="32" y2="56" class="primary" />
+                        <line x1="8" y1="32" x2="12" y2="32" class="primary" />
+                        <line x1="52" y1="32" x2="56" y2="32" class="primary" />
+                        <line x1="32" y1="32" x2="32" y2="18" class="primary" />
+                        <line x1="32" y1="32" x2="44" y2="32" class="primary" />
+                        <circle cx="32" cy="32" r="3" class="fill" />
+                    </svg>
+                    <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{'login.title' | translate}}</div>
+                </div>
+
+                <form [formGroup]="loginForm" (ngSubmit)="login()">
+                    <div>
+                        <label for="email1"
+                            class="block text-surface-900 dark:text-surface-0 text-1xl font-medium mb-2">{{'login.username'
+                            | translate}}</label>
+                        <input pInputText id="email1" type="text" placeholder="{{'login.username' | translate}}"
+                            class="w-full md:w-100 mb-8" formControlName="username" required />
+                        <label for="password1"
+                            class="block text-surface-900 dark:text-surface-0 font-medium text-1xl mb-2">{{'login.password'
+                            | translate}}</label>
+                        <p-password id="password1" formControlName="password"
+                            placeholder="{{'login.password' | translate}}" [toggleMask]="true" styleClass="mb-4"
+                            [fluid]="true" [feedback]="false" required></p-password>
+
+                        <div class="flex items-center justify-between mt-2 mb-8 gap-8">
+                            <div class="flex items-center">
+                                <p-checkbox formControlName="checked" inputId="checked" binary
+                                    class="mr-2"></p-checkbox>
+                                <label for="checked">{{'login.rememberusername' | translate}}</label>
+                            </div>
+                        </div>
+                        <p-button label="{{'login.login' | translate}}" styleClass="w-full" type="submit"></p-button>
+                        <p-toast />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

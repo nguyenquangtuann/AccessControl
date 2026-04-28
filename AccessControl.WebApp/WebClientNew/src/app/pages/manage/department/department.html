@@ -1,0 +1,105 @@
+<p-toolbar styleClass="mb-6" *ngIf="('CreateDep' | userRoles) || ('DeleteDep' | userRoles)">
+    <ng-template #start>
+        <p-button label="{{'department.add' | translate}}" icon="pi pi-plus" severity="secondary" class="mr-2"
+            (onClick)="openDialog('create')" *ngIf="'CreateDep' | userRoles" />
+        <p-button severity="secondary" label="{{'department.delete' | translate}}" icon="pi pi-trash" outlined
+            (onClick)="deleteMultiple()" [disabled]="!selected || !selected.length" *ngIf="'DeleteDep' | userRoles" />
+    </ng-template>
+</p-toolbar>
+
+<p-table #dt [value]="allDepartment" [rows]="10" [columns]="" [paginator]="true" [totalRecords]="totalRecords"
+    *ngIf="'ViewDep' | userRoles" [tableStyle]="{ 'min-width': '75rem' }" [rowHover]="true" dataKey="depId"
+    (onLazyLoad)="onLazyLoad($event)"
+    currentPageReportTemplate="{{'department.display' | translate}} {first} {{'department.to' | translate}} {last} {{'department.of' | translate}} {totalRecords} {{'department.record' | translate}}"
+    [showCurrentPageReport]="true" [rowsPerPageOptions]="pageSizeOptions" [(selection)]="selected" [scrollable]="true"
+    [lazy]="true">
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">{{'department.title' | translate}}</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (keyup)="applySearch($event)"
+                    placeholder="{{'department.search' | translate}}" />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="width: 3rem" pFrozenColumn>
+                <p-tableHeaderCheckbox />
+            </th>
+            <th style="min-width: 3rem; text-align: center;">{{'department.STT' | translate}}</th>
+            <th pSortableColumn="depName" style="min-width:10rem">
+                {{'department.depname' | translate}}
+            </th>
+            <th pSortableColumn="depDescription" style="min-width: 10rem">
+                {{'department.description' | translate}}
+            </th>
+            <th pSortableColumn="depStatus" style="min-width:10rem;text-align: center;">
+                {{'department.status' | translate}}
+            </th>
+            <th pSortableColumn="action" alignFrozen="right" pFrozenColumn style="min-width:8rem; text-align: center;"
+                *ngIf="('UpdateDep' | userRoles) || ('DeleteDep' | userRoles)">
+                {{'department.action' | translate}}
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-dep let-rowIndex="rowIndex">
+        <tr>
+            <td style="width: 3rem" pFrozenColumn>
+                <p-tableCheckbox [value]="dep" />
+            </td>
+            <td style="text-align: center; font-weight: 600;">
+                {{rowIndex + 1 }}
+            </td>
+            <td>{{ dep.depName }}</td>
+            <td>{{ dep.depDescription }}</td>
+            <td style="text-align: center;">
+                <i class="pi" [ngClass]="{
+                        'text-green-500 pi-check-circle': dep.depStatus,
+                        'text-red-500 pi-times-circle': !dep.depStatus
+                    }"></i>
+            </td>
+            <td alignFrozen="right" pFrozenColumn style="text-align: center;"
+                *ngIf="('UpdateDep' | userRoles) || ('DeleteDep' | userRoles)">
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                    *ngIf="'UpdateDep' | userRoles" (onClick)="openDialog('edit',dep)" />
+                <p-button icon="pi pi-trash" [disabled]="dep.depStatus == false" severity="danger"
+                    (onClick)="delete(dep)" [rounded]="true" [outlined]="true" *ngIf="'DeleteDep' | userRoles" />
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<form [formGroup]="depForm" (ngSubmit)="addData()">
+    <p-dialog [(visible)]="depDialog" [style]="{ width: '650px','max-height': '800px' }" [header]="title" [modal]="true"
+        [closable]="false">
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="depName" class="block font-bold mb-3">{{'department.depname' | translate}}</label>
+                <input type="text" pInputText id="depName" formControlName="depName" maxlength="100" required autofocus
+                    fluid />
+                <small class="text-red-500"
+                    *ngIf="depForm.get('depName')?.hasError('required') && depForm.get('depName')?.touched">
+                    {{'department.depnamerequired' | translate}}
+                </small>
+            </div>
+            <div>
+                <label for="depDescription" class="block font-bold mb-3">{{'department.description' |
+                    translate}}</label>
+                <input type="text" pInputText id="depDescription" formControlName="depDescription" maxlength="200"
+                    autofocus fluid />
+            </div>
+            <div class="flex items-center">
+                <p-checkbox inputId="depStatus" binary="true" formControlName="depStatus" />
+                <label for="depStatus" class="ml-2">{{'department.status' | translate}}</label>
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button label="{{'department.close' | translate}}" icon="pi pi-times" text (click)="hideDialog()" />
+            <p-button label="{{'department.save' | translate}}" type="submit" icon="pi pi-check" [disabled]="depForm.invalid" />
+        </ng-template>
+    </p-dialog>
+</form>
+<p-toast />
+<p-confirmdialog [style]="{ width: '450px' }" />

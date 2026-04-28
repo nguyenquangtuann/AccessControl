@@ -1,0 +1,28 @@
+# Compiled output
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+
+# Node
+/node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Angular specific
+/.angular/
+.sass-cache/
+/connect.lock
+/coverage/
+
+# System Files
+.DS_Store
+Thumbs.db

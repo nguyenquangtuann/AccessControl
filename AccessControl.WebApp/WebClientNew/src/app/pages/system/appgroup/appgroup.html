@@ -1,0 +1,111 @@
+<p-toolbar styleClass="mb-6" *ngIf="('CreateGroup' | userRoles) || ('DeleteGroup' | userRoles)">
+    <ng-template #start>
+        <p-button label="{{'appgroup.add' | translate}}" icon="pi pi-plus" severity="secondary" class="mr-2"
+            (onClick)="openDialog('create')" *ngIf="'CreateGroup' | userRoles" />
+        <p-button severity="secondary" label="{{'appgroup.delete' | translate}}" icon="pi pi-trash" outlined
+            (onClick)="deleteMultiple()" [disabled]="!selected || !selected.length" *ngIf="'DeleteGroup' | userRoles" />
+    </ng-template>
+</p-toolbar>
+
+<p-table #dt [value]="groupData" [rows]="10" [columns]="" [paginator]="true" [totalRecords]="totalRecords"
+    *ngIf="'ViewGroup' | userRoles" [tableStyle]="{ 'min-width': '75rem' }" [rowHover]="true" dataKey="id"
+    (onLazyLoad)="onLazyLoad($event)"
+    currentPageReportTemplate="{{'appgroup.display' | translate}} {first} {{'appgroup.to' | translate}} {last} {{'appgroup.of' | translate}} {totalRecords} {{'appgroup.record' | translate}}"
+    [showCurrentPageReport]="true" [rowsPerPageOptions]="pageSizeOptions" [(selection)]="selected" [scrollable]="true"
+    [lazy]="true">
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">{{'appgroup.title' | translate}} </h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (keyup)="applySearch($event)"
+                    placeholder="{{'appgroup.search' | translate}}" />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="width: 3rem" pFrozenColumn>
+                <p-tableHeaderCheckbox />
+            </th>
+            <th style="min-width: 3rem; text-align: center;">{{'appgroup.STT' | translate}}</th>
+            <th pSortableColumn="groupCode" style="min-width:10rem">
+                {{'appgroup.groupcode' | translate}}
+            </th>
+            <th pSortableColumn="name" style="min-width: 10rem">
+                {{'appgroup.name' | translate}}
+            </th>
+            <th pSortableColumn="createdDate" style="min-width:10rem">
+                {{'appgroup.createddate' | translate}}
+            </th>
+            <th pSortableColumn="createdBy" style="min-width: 10rem">
+                {{'appgroup.createdby' | translate}}
+            </th>
+            <th pSortableColumn="action" alignFrozen="right" pFrozenColumn style="min-width:8rem; text-align: center;"
+                *ngIf="('UpdateGroup' | userRoles) || ('DeleteGroup' | userRoles)">
+                {{'appgroup.action' | translate}}
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-group let-rowIndex="rowIndex">
+        <tr>
+            <td style="width: 3rem" pFrozenColumn>
+                <p-tableCheckbox [value]="group" />
+            </td>
+            <td style="text-align: center; font-weight: 600;">
+                {{rowIndex + 1 }}
+            </td>
+            <td>{{ group.groupCode }}</td>
+            <td>{{ group.name }}</td>
+            <td>{{ group.createdDate | date:"dd-MM-yyyy HH:mm:ss"}}</td>
+            <td>{{ group.createdBy | userPipe }}</td>
+            <td alignFrozen="right" pFrozenColumn style="text-align: center;"
+                *ngIf="('UpdateGroup' | userRoles) || ('DeleteGroup' | userRoles)">
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                    *ngIf="'UpdateGroup' | userRoles" (onClick)="openDialog('edit',group)" />
+                <p-button icon="pi pi-trash" severity="danger" (onClick)="delete(group)" [rounded]="true"
+                    [outlined]="true" *ngIf="'DeleteGroup' | userRoles" />
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<form [formGroup]="groupForm" (ngSubmit)="addData()">
+    <p-dialog [(visible)]="groupDialog" [style]="{ width: '650px','max-height': '800px' }" [header]="title"
+        [modal]="true" [closable]="false">
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="groupCode" class="block font-bold mb-3">{{'appgroup.groupcode' | translate}}</label>
+                <input type="text" pInputText id="groupCode" formControlName="groupCode" required autofocus fluid />
+                <small class="text-red-500"
+                    *ngIf="groupForm.get('groupCode')?.hasError('required') && groupForm.get('groupCode')?.touched">
+                    {{'appgroup.groupcoderequired' | translate}}
+                </small>
+            </div>
+            <div>
+                <label for="name" class="block font-bold mb-3">{{'appgroup.name' | translate}}</label>
+                <input type="text" pInputText id="name" formControlName="name" required autofocus fluid />
+                <small class="text-red-500"
+                    *ngIf="groupForm.get('name')?.hasError('required') && groupForm.get('name')?.touched">
+                    {{'appgroup.namerequired' | translate}}
+                </small>
+            </div>
+            <div>
+                <label for="name" class="block font-bold mb-3">{{'appgroup.roles' | translate}}</label>
+                <p-tree style="padding: 5px;" [value]="treeValue" [propagateSelectionUp]="true"
+                    [propagateSelectionDown]="true" selectionMode="checkbox" [(selection)]="selectedTreeValue">
+                    <ng-template let-node pTemplate="default">
+                        {{ node.label | translate }}
+                    </ng-template>
+                </p-tree>
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button label="{{'appgroup.close' | translate}}" icon="pi pi-times" text (click)="hideDialog()" />
+            <p-button label="{{'appgroup.save' | translate}}" type="submit" icon="pi pi-check"
+                [disabled]="groupForm.invalid" />
+        </ng-template>
+    </p-dialog>
+</form>
+<p-toast />
+<p-confirmdialog [style]="{ width: '450px' }" />

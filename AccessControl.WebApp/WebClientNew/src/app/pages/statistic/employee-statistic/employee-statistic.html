@@ -1,0 +1,133 @@
+<!-- <h4>Thống kê nhân viên</h4> -->
+
+<div class="card flex flex-col gap-4" style="padding: 1.2rem 2rem 1.2rem 2rem; margin-bottom: 1rem;">
+    <div style="display: grid;grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; width: 100%;">
+        <div style="flex: 1;">
+            <div class="font-semibold" style="font-size: 15px; margin-bottom: 6px;">{{'employeestatistic.depname' |
+                translate}}</div>
+            <p-multiselect style="width: 100%;height: 40px;align-items: center;" [options]="department"
+                [(ngModel)]="multiselectSelectedDep" placeholder="{{'employeestatistic.choosedep' | translate}}"
+                optionLabel="depName" display="chip" [filter]="true"
+                emptyFilterMessage="{{ 'employeestatistic.noresult' | translate }}">
+                <ng-template #selecteditems let-deps>
+                    @for (dep of deps; track dep.depId) {
+                    <div
+                        class="inline-flex items-center py-1 px-2 bg-primary text-primary-contrast rounded-border mr-2">
+                        <div>{{ dep.depName }}</div>
+                    </div>
+                    }
+                </ng-template>
+                <ng-template #item let-dep>
+                    <div class="flex items-center">
+                        <div>{{ dep.depName }}</div>
+                    </div>
+                </ng-template>
+            </p-multiselect>
+        </div>
+
+        <div style="flex: 1;">
+            <div class="font-semibold" style="font-size: 15px; margin-bottom: 6px;">{{'employeestatistic.regname' |
+                translate}}</div>
+            <p-multiselect style="width: 100%;height: 40px;align-items: center;" [options]="regency"
+                [(ngModel)]="multiselectSelectedReg" placeholder="{{'employeestatistic.choosereg' | translate}}"
+                optionLabel="regName" display="chip" [filter]="true"
+                emptyFilterMessage="{{ 'employeestatistic.noresult' | translate }}">
+                <ng-template #selecteditems let-regs>
+                    @for (reg of regs; track reg.regId) {
+                    <div
+                        class="inline-flex items-center py-1 px-2 bg-primary text-primary-contrast rounded-border mr-2">
+                        <div>{{ reg.regName }}</div>
+                    </div>
+                    }
+                </ng-template>
+                <ng-template #item let-reg>
+                    <div class="flex items-center">
+                        <div>{{ reg.regName }}</div>
+                    </div>
+                </ng-template>
+            </p-multiselect>
+        </div>
+
+        <div style="flex: 1;">
+            <div class="font-semibold" style="font-size: 15px; margin-bottom: 6px;">{{'employeestatistic.status' |
+                translate}}</div>
+            <p-select style="width: 100%;height: 40px;align-items: center;" [(ngModel)]="statusValue" [options]="status"
+                optionLabel="name" placeholder="{{'employeestatistic.choosestatus' | translate}}" />
+        </div>
+    </div>
+    <div style="display: flex;justify-content: flex-end; gap:10px;">
+        <p-button label="{{'employeestatistic.statistical' | translate}}" outlined icon="pi pi-chart-bar"
+            *ngIf="'ViewEmStatistic' | userRoles" (onClick)="loadData()" />
+        <p-button label="{{'employeestatistic.refresh' | translate}}" severity="info" icon="pi pi-refresh" outlined
+            *ngIf="'ViewEmStatistic' | userRoles" (onClick)="refresh()" />
+        <p-button label="{{'employeestatistic.export' | translate}}" icon="pi pi-download" severity="contrast" outlined
+            *ngIf="'ExEmStatistic' | userRoles" (onClick)="exportToExcel()" [disabled]="disableButton" />
+    </div>
+</div>
+
+<p-table #dt [value]="allData" [rows]="pageSize" [columns]="" [paginator]="true" [totalRecords]="totalRecords"
+    *ngIf="('ViewEmStatistic' | userRoles) && allData.length > 0" [tableStyle]="{ 'min-width': '75rem' }"
+    [rowHover]="true" dataKey="emId" (onLazyLoad)="onLazyLoad($event)"
+    currentPageReportTemplate="{{'employeestatistic.display' | translate}} {first} {{'employeestatistic.to' | translate}} {last} {{'employeestatistic.of' | translate}} {totalRecords} {{'employeestatistic.record' | translate}}"
+    [showCurrentPageReport]="true" [rowsPerPageOptions]="pageSizeOptions" [scrollable]="true" [lazy]="true">
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 style="margin: 0;">{{'employeestatistic.title' | translate}}</h5>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="min-width: 3rem; text-align: center;">{{'employeestatistic.STT' | translate}}</th>
+            <th pSortableColumn="emName" style="min-width: 10rem">
+                {{ 'employeestatistic.emname' | translate }}
+            </th>
+            <th pSortableColumn="emCode" style="min-width: 5rem">
+                {{ 'employeestatistic.emcode' | translate }}
+            </th>
+            <th pSortableColumn="emGender" style="min-width: 3rem; text-align: center;">
+                {{ 'employeestatistic.emgender' | translate }}
+            </th>
+            <th pSortableColumn="emBirthdate" style="min-width: 7rem; text-align: center;">
+                {{ 'employeestatistic.embirthdate' | translate }}
+            </th>
+            <th pSortableColumn="emAddress" style="min-width: 10rem">
+                {{ 'employeestatistic.emaddress' | translate }}
+            </th>
+            <th pSortableColumn="emPhone" style="min-width: 7rem; text-align: center;">
+                {{ 'employeestatistic.emphone' | translate }}
+            </th>
+            <th pSortableColumn="depName" style="min-width: 10rem">
+                {{ 'employeestatistic.depname' | translate }}
+            </th>
+            <th pSortableColumn="regName" style="min-width: 10rem">
+                {{ 'employeestatistic.regname' | translate }}
+            </th>
+            <th pSortableColumn="emStatus" style="min-width: 5rem; text-align: center; ">
+                {{ 'employeestatistic.status' | translate }}
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-em let-rowIndex="rowIndex">
+        <tr>
+            <td style="text-align: center; font-weight: 600;">
+                {{rowIndex + 1 }}
+            </td>
+            <td>{{ em.emName }}</td>
+            <td>{{ em.emCode }}</td>
+            <td style="text-align: center;">{{ (em.emGender == 'M'?'employeestatistic.male':'employeestatistic.female')
+                | translate }}</td>
+            <td style="text-align: center;">{{ em.emBirthdate|date:'dd-MM-yyyy'}}</td>
+            <td>{{ em.emAddress}}</td>
+            <td style="text-align: center;">{{ em.emPhone}}</td>
+            <td>{{ em.depName}}</td>
+            <td>{{ em.regName}}</td>
+            <td style="text-align: center;">
+                <i class="pi" [ngClass]="{
+                        'text-green-500 pi-check-circle': em.emStatus,
+                        'text-red-500 pi-times-circle': !em.emStatus
+                    }"></i>
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+<p-toast />

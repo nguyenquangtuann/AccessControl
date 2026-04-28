@@ -1,0 +1,81 @@
+<p-toolbar styleClass="mb-6" *ngIf="('CreateRole' | userRoles) && ('DeleteRole' | userRoles)">
+    <ng-template #start>
+        <p-button label="{{'role.add' | translate}}" icon="pi pi-plus" severity="secondary" class="mr-2"
+            (onClick)="openDialog('create')" *ngIf="'CreateRole' | userRoles" />
+        <p-button severity="secondary" label="{{'role.delete' | translate}}" icon="pi pi-trash" outlined
+            (onClick)="deleteMultiple()" [disabled]="!selectedTreeValue || !selectedTreeValue.length"
+            *ngIf="'DeleteRole' | userRoles" />
+    </ng-template>
+</p-toolbar>
+
+<p-tree [value]="treeValue" *ngIf="'ViewRole' | userRoles" [propagateSelectionDown]="true" selectionMode="checkbox"
+    [(selection)]="selectedTreeValue" [propagateSelectionUp]="false">
+
+    <ng-template let-node pTemplate="default">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center">
+                <span class="ml-2">{{ node.label | translate}}</span>
+            </div>
+
+            <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm ml-2"
+                (click)="openDialog('edit', node.data); $event.stopPropagation()" *ngIf="'UpdateRole' | userRoles">
+            </button>
+            <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm"
+                (click)="delete(node.data); $event.stopPropagation()" *ngIf="'DeleteRole' | userRoles">
+            </button>
+        </div>
+    </ng-template>
+</p-tree>
+
+<form [formGroup]="roleForm" (ngSubmit)="addData()">
+    <p-dialog [(visible)]="roleDialog" [style]="{ width: '650px','max-height': '800px' }" [header]="title"
+        [modal]="true" [closable]="false">
+        <div class="flex flex-col gap-6">
+            <div>
+                <label class="block font-bold mb-3">{{'role.name' | translate}}</label>
+                <input type="text" pInputText formControlName="name" required autofocus fluid maxlength="50" />
+                <small class="text-red-500"
+                    *ngIf="roleForm.get('name')?.hasError('required') && roleForm.get('name')?.touched">
+                    {{'role.namerequired' | translate}}
+                </small>
+            </div>
+            <div>
+                <label class="block font-bold mb-3">{{'role.description' | translate}}</label>
+                <input type="text" pInputText formControlName="description" required autofocus fluid maxlength="100" />
+                <small class="text-red-500"
+                    *ngIf="roleForm.get('description')?.hasError('required') && roleForm.get('description')?.touched">
+                    {{'role.descriptionrequired' | translate}}
+                </small>
+            </div>
+            <div>
+                <label class="block font-bold mb-3">{{'role.parent' | translate}}</label>
+                <p-autocomplete formControlName="parentId" [suggestions]="filteredRoleParents" optionLabel="description"
+                    placeholder="{{'role.placeholder'| translate}}" [emptyMessage]="'role.emptyparent' | translate"
+                    dropdown display="chip" (completeMethod)="filterRoleParent($event)" autofocus fluid />
+            </div>
+            <div>
+                <label class="block font-bold mb-3">{{'role.icon' | translate}}</label>
+                <input type="text" pInputText formControlName="icon" autofocus fluid maxlength="100" />
+            </div>
+            <div>
+                <label class="block font-bold mb-3">{{'role.link' | translate}}</label>
+                <input type="text" pInputText formControlName="link" autofocus fluid maxlength="100" />
+            </div>
+            <div>
+                <label class="block font-bold mb-3">{{'role.activelink' | translate}}</label>
+                <input type="text" pInputText formControlName="activeLink" autofocus fluid maxlength="100" />
+            </div>
+            <div>
+                <label class="block font-bold mb-3">{{'role.orderby' | translate}}</label>
+                <input type="number" pInputText formControlName="orderBy" autofocus fluid />
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button label="{{'role.close'|translate}}" icon="pi pi-times" text (click)="hideDialog()" />
+            <p-button label="{{'role.save'|translate}}" type="submit" icon="pi pi-check"
+                [disabled]="roleForm.invalid" />
+        </ng-template>
+    </p-dialog>
+</form>
+<p-toast />
+<p-confirmdialog [style]="{ width: '450px' }" />

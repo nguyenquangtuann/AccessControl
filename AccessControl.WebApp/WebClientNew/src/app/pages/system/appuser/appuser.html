@@ -1,0 +1,217 @@
+<p-toolbar styleClass="mb-6" *ngIf="('CreateUser' | userRoles) || ('DeleteUser' | userRoles)">
+    <ng-template #start>
+        <p-button label="{{'account.add' | translate}}" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openDialog('create')"
+            *ngIf="'CreateUser' | userRoles" />
+        <p-button severity="secondary" label="{{'account.delete' | translate}}" icon="pi pi-trash" outlined (onClick)="deleteMultiple()"
+            [disabled]="!selected || !selected.length" *ngIf="'DeleteUser' | userRoles" />
+    </ng-template>
+</p-toolbar>
+
+<p-table #dt [value]="allUsers" [rows]="10" [columns]="" [paginator]="true" [totalRecords]="totalRecords"
+    *ngIf="'ViewUser' | userRoles" [tableStyle]="{ 'min-width': '75rem' }" [rowHover]="true" dataKey="id"
+    (onLazyLoad)="onLazyLoad($event)" currentPageReportTemplate="{{'account.display' | translate}} {first} {{'account.to' | translate}} {last} {{'account.of' | translate}} {totalRecords} {{'account.record' | translate}}"
+    [showCurrentPageReport]="true" [rowsPerPageOptions]="pageSizeOptions" [(selection)]="selected" [scrollable]="true" [lazy]="true">
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">{{'account.title' | translate}}</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (keyup)="applySearch($event)" placeholder="{{'account.search' | translate}}" />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="width: 3rem" pFrozenColumn>
+                <p-tableHeaderCheckbox />
+            </th>
+            <th style="min-width: 3rem; text-align: center;">{{'account.stt' | translate}}</th>
+            <th pSortableColumn="userName" style="min-width:10rem">
+                {{'account.username' | translate}}
+            </th>
+            <th pSortableColumn="fullName" style="min-width: 10rem">
+                {{'account.fullname' | translate}}
+            </th>
+            <th pSortableColumn="email" style="min-width:10rem">
+                {{'account.email' | translate}}
+            </th>
+            <th pSortableColumn="phoneNumber" style="min-width: 10rem">
+                {{'account.phonenumber' | translate}}
+            </th>
+            <th pSortableColumn="createdDate" style="min-width:10rem">
+                {{'account.createddate' | translate}}
+            </th>
+            <th pSortableColumn="createdBy" style="min-width:10rem">
+                {{'account.createdby' | translate}}
+            </th>
+            <th pSortableColumn="status" style="min-width:10rem;text-align: center;">
+                {{'account.status' | translate}}
+            </th>
+            <th pSortableColumn="action" alignFrozen="right" pFrozenColumn style="min-width:8rem; text-align: center;" *ngIf="('UpdateUser' | userRoles) || ('DeleteUser' | userRoles)">
+                {{'account.action' | translate}}
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-appUser let-rowIndex="rowIndex">
+        <tr>
+            <td style="width: 3rem" pFrozenColumn>
+                <p-tableCheckbox [value]="appUser" />
+            </td>
+            <td style="text-align: center; font-weight: 600;">
+               {{rowIndex + 1 }}
+            </td>
+            <td>{{ appUser.userName }}</td>
+            <td>{{ appUser.fullName }}</td>
+            <td>{{ appUser.email }}</td>
+            <td>{{ appUser.phoneNumber }}</td>
+            <td>{{ appUser.createdDate | date:"dd-MM-yyyy HH:mm:ss"}}</td>
+            <td>{{ appUser.createdBy | userPipe }}</td>
+            <td style="text-align: center;">
+                <i class="pi" [ngClass]="{
+                        'text-green-500 pi-check-circle': appUser.status,
+                        'text-red-500 pi-times-circle': !appUser.status
+                    }"></i>
+            </td>
+            <td alignFrozen="right" pFrozenColumn style="text-align: center;" *ngIf="('UpdateUser' | userRoles) || ('DeleteUser' | userRoles)">
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                    *ngIf="'UpdateUser' | userRoles" (onClick)="openDialog('edit',appUser)" />
+                <p-button icon="pi pi-trash" [disabled]="appUser.status == false" severity="danger"
+                    (onClick)="delete(appUser)" [rounded]="true" [outlined]="true" *ngIf="'DeleteUser' | userRoles" />
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<form [formGroup]="userForm" (ngSubmit)="addData()">
+    <p-dialog [(visible)]="userDialog" [style]="{ width: '650px','max-height': '800px' }" [header]="title"
+        [modal]="true" [closable]="false">
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="userName" class="block font-bold mb-3">{{'account.username' | translate}}</label>
+                <input type="text" pInputText id="userName" formControlName="userName" required autofocus fluid />
+                <small class="text-red-500"
+                    *ngIf="userForm.get('userName')?.hasError('required') && userForm.get('userName')?.touched">
+                    {{'account.usernamerequired' | translate}}
+                </small>
+                <small class="text-red-500"
+                    *ngIf="userForm.get('userName')?.hasError('maxlength') && userForm.get('userName')?.touched">
+                    {{'account.usernamemaxlength' | translate}}
+                </small>
+            </div>
+            <div class="grid grid-cols-12 gap-4" *ngIf="showPasswordField()">
+                <div class="col-span-6">
+                    <label for="password" class="block font-bold mb-3">{{'account.password' | translate}}</label>
+                    <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="false" fluid
+                        required></p-password>
+                    <small class="text-red-500"
+                        *ngIf="userForm.get('password')?.hasError('required') && userForm.get('password')?.touched">
+                        {{'account.passwordrequired' | translate}}
+                    </small>
+                    <small class="text-red-500"
+                        *ngIf="userForm.get('password')?.hasError('minlength') && userForm.get('password')?.touched">
+                        {{'account.passwordminlength' | translate}}
+                    </small>
+                    <small class="text-red-500"
+                        *ngIf="userForm.get('password')?.hasError('maxlength') && userForm.get('password')?.touched">
+                        {{'account.passwordmaxlength' | translate}}
+                    </small>
+                </div>
+                <div class="col-span-6">
+                    <label for="confirmPassword" class="block font-bold mb-3">{{'account.confirmpassword' | translate}}</label>
+                    <p-password id="confirmPassword" formControlName="confirmPassword" [toggleMask]="true"
+                        [feedback]="false" fluid required></p-password>
+                    <small class="text-red-500"
+                        *ngIf="userForm.get('confirmPassword')?.hasError('required') && userForm.get('confirmPassword')?.touched">
+                        {{'account.confirmpasswordrequired' | translate}}
+                    </small>
+                    <small class="text-red-500"
+                        *ngIf="userForm.get('confirmPassword')?.hasError('minlength') && userForm.get('confirmPassword')?.touched">
+                        {{'account.confirmpasswordminlength' | translate}}
+                    </small>
+                    <small class="text-red-500"
+                        *ngIf="userForm.get('confirmPassword')?.hasError('maxlength') && userForm.get('confirmPassword')?.touched">
+                        {{'account.confirmpasswordmaxlength' | translate}}
+                    </small>
+                    <small class="text-red-500"
+                        *ngIf="userForm.hasError('passwordMismatch') && userForm.get('confirmPassword')?.touched">
+                        {{'account.passwordmismatch' | translate}}
+                    </small>
+                </div>
+            </div>
+            <div>
+                <label for="emId" class="block font-bold mb-3">{{'account.employee' | translate}}</label>
+                <p-autocomplete formControlName="emId" [suggestions]="filteredEmployees" optionLabel="emName"
+                    placeholder="{{'account.placeholder' | translate}}" [emptyMessage]="'account.emptyemployee' | translate" dropdown display="chip"
+                    (completeMethod)="filterEmployee($event)" autofocus fluid />
+                <small class="text-red-500"
+                    *ngIf="userForm.get('emId')?.hasError('required') && userForm.get('emId')?.touched">
+                    {{'account.employeerequired' | translate}}
+                </small>
+            </div>
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-6">
+                    <label for="phoneNumber" class="block font-bold mb-3">{{'account.phonenumber' | translate}}</label>
+                    <input type="text" pInputText id="phoneNumber" formControlName="phoneNumber" autofocus fluid />
+                    <small class="text-red-500"
+                        *ngIf="userForm.get('phoneNumber')?.hasError('pattern') && userForm.get('phoneNumber')?.touched">
+                        {{'account.phonenumberpattern' | translate}}
+                    </small>
+                </div>
+                <div class="col-span-6">
+                    <label for="email" class="block font-bold mb-3">{{'account.email' | translate}}</label>
+                    <input type="text" pInputText id="email" formControlName="email" autofocus fluid />
+                    <small class="text-red-500"
+                        *ngIf="userForm.get('email')?.hasError('email') && userForm.get('email')?.touched">
+                        {{'account.emailpattern' | translate}}
+                    </small>
+                    <small class="text-red-500"
+                        *ngIf="userForm.get('email')?.hasError('maxlength') && userForm.get('email')?.touched">
+                        {{'account.emailmaxlength' | translate}}
+                    </small>
+                </div>
+            </div>
+            <div>
+                <label for="groupId" class="block font-bold mb-3">{{'account.rolegroup' | translate}}</label>
+                <p-autocomplete formControlName="groupId" [suggestions]="filteredGroup" optionLabel="name"
+                    placeholder="{{'account.placeholder' | translate}}" [emptyMessage]="'account.emptygroup' | translate" dropdown display="chip"
+                    (completeMethod)="filterGroup($event)" autofocus fluid />
+                <small class="text-red-500"
+                    *ngIf="userForm.get('groupId')?.hasError('required') && userForm.get('groupId')?.touched">
+                    {{'account.rolegrouprequired' | translate}}
+                </small>
+            </div>
+            <div>
+                <label class="block font-bold mb-3">{{'account.image' | translate}}</label>
+                <div class="flex flex-col items-center gap-2">
+                    <p-button label="{{'account.selectimage' | translate}}" outlined onclick="document.getElementById('getFile').click()" />
+                    <input type="file" id="getFile" #fileInput (change)="imagePreview($event)" style="display: none;">
+                    <div *ngIf="userForm.get('image')?.value === '' || userForm.get('image')?.value === null">
+                        <img src="assets/images/user-none.png" class="mt-3 w-50" />
+                    </div>
+                    <div *ngIf="userForm.get('image')?.value !== '' && userForm.get('image')?.value !== null">
+                        <img src="{{ 'data:image/jpg;base64,' + userForm.get('image')?.value }}" class="mt-3 w-50" />
+                        <div class="mt-4 flex justify-center">
+                            <p-button icon="pi pi-times" severity="danger" rounded outlined
+                                (click)="fileInput.value = ''; clearImage()" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <div class="flex justify-between w-full items-center">
+                <div class="flex items-center" *ngIf="this.action == 'edit'">
+                    <p-checkbox inputId="status" binary="true" formControlName="status" />
+                    <label for="status" class="ml-2">{{'account.status' | translate}}</label>
+                </div>
+
+                <div class="flex gap-2">
+                    <p-button label="{{'account.close' | translate}}" icon="pi pi-times" text (click)="hideDialog()" />
+                    <p-button label="{{'account.save' | translate}}" type="submit" icon="pi pi-check" [disabled]="userForm.invalid" />
+                </div>
+            </div>
+        </ng-template>
+    </p-dialog>
+</form>
+<p-toast />
+<p-confirmdialog [style]="{ width: '450px' }" />
